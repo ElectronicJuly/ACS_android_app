@@ -8,6 +8,7 @@ import android.os.Build
 import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,6 +20,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -43,6 +46,7 @@ import java.time.Instant
 
 val defaultPadding = 16.dp
 val itemSpacing = 8.dp
+var saveLoginInfo = true
 
 fun SaveUserData(auth: String, context: Context): HashMap<String, Any> {
     val taskData = HashMap<String, Any>()
@@ -74,9 +78,6 @@ fun LoginScreen(onSignUpClick: () -> Unit){
         mutableStateOf("")
     }
 
-    val (checked, onCheckedChance) = rememberSaveable {
-        mutableStateOf(false)
-    }
 
     val isFieldsEmpty = userName.isNotEmpty() && password.isNotEmpty()
     val context = LocalContext.current.applicationContext
@@ -126,8 +127,25 @@ fun LoginScreen(onSignUpClick: () -> Unit){
 
         )
         Spacer(Modifier.height(itemSpacing))
+        val checkboxRow = Row( // Using Row for horizontal layout
+            modifier = Modifier.align(Alignment.Start)
+        ) {
+            val checkbox = Checkbox(
+                checked = false,
 
-        Spacer(Modifier.height(itemSpacing))
+                enabled = true,
+                onCheckedChange = {
+                    isChecked ->
+                    Log.d(tag, "Checkbox state changed: $isChecked")
+                }
+
+            )
+            val text = Text(
+                text = "Запомни меня",
+                modifier = Modifier.align(Alignment.CenterVertically)
+            )
+        }
+
         Button(
             modifier = Modifier.fillMaxWidth(),
             enabled = isFieldsEmpty,
@@ -151,12 +169,15 @@ fun LoginScreen(onSignUpClick: () -> Unit){
                                 .addOnFailureListener {
                                     Log.d(tag, "Encountered error while adding to db")
                                 }
-                            val sharedPreferences = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
-                            val editor = sharedPreferences.edit()
-                            editor.putString("user_uid", auth.currentUser?.uid.toString())
-                            editor.putString("user_mail", auth.currentUser?.email.toString())
-                            editor.apply() // or editor.commit()
+                            if (saveLoginInfo) {
+                                val sharedPreferences = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+                                val editor = sharedPreferences.edit()
+                                editor.putString("user_uid", auth.currentUser?.uid.toString())
+                                editor.putString("user_mail", auth.currentUser?.email.toString())
+                                editor.apply()
+                            }
                             onSignUpClick()
+
                         } else {
                             Log.w(TAG, "signInWithEmail:failure", task.exception)
                             Toast.makeText(

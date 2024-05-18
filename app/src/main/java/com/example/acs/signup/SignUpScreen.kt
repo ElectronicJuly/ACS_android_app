@@ -7,6 +7,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -128,19 +129,24 @@ fun SignUpScreen(onLoginClick: () -> Unit)  {
             Text("Подтвердить")
             
         }
-        Button(
-            modifier = Modifier
-                .align(Alignment.End)
-                .padding(),
-            enabled = true,
-            onClick = {
-                val editor = sharedPreferences.edit()
-                editor.putString("user_uid", null)
-                editor.putString("user_mail", null)
-                editor.apply()
-                onLoginClick()
-                      }, ) {
-            Text("Logout")
+        Row {
+            Spacer(modifier = Modifier
+                .align(Alignment.Bottom))
+            Button(
+                modifier = Modifier
+
+                    .padding(),
+                enabled = true,
+                onClick = {
+                    val editor = sharedPreferences.edit()
+                    editor.putString("user_uid", null)
+                    editor.putString("user_mail", null)
+                    editor.apply()
+                    onLoginClick()
+                }, ) {
+                Text("Logout")
+        }
+
 
     }
 
