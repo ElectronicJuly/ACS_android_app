@@ -4,6 +4,7 @@ import android.content.ContentValues.TAG
 import android.util.Log
 import android.widget.Toast
 import android.content.Context
+import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -60,15 +61,15 @@ fun LoginScreen(onSignUpClick: () -> Unit){
     val isFieldsEmpty = userName.isNotEmpty() && password.isNotEmpty()
     val context = LocalContext.current.applicationContext
 
+    val auth = Firebase.auth
+    val currentUser = auth.currentUser
+    val tag = "MyActivity"
+
     val sharedPreferences = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
     val userId = sharedPreferences.getString("user_uid", null)
     if (userId != null) {
         onSignUpClick()
     }
-    val auth = Firebase.auth
-    val currentUser = auth.currentUser
-    val tag = "MyActivity"
-
     Column (
         modifier = Modifier
             .fillMaxSize()
@@ -127,6 +128,9 @@ fun LoginScreen(onSignUpClick: () -> Unit){
                             val timestamp = instant.toEpochMilli()
                             taskData["user"] = auth.currentUser?.email.toString()
                             taskData["date"] = Timestamp.now()
+
+                            val deviceModelName = Build.MODEL
+                            taskData["device_model"] = deviceModelName
                             db.collection("login_history")
                                 .add(taskData)
                                 .addOnSuccessListener {
@@ -138,6 +142,7 @@ fun LoginScreen(onSignUpClick: () -> Unit){
                             val sharedPreferences = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
                             val editor = sharedPreferences.edit()
                             editor.putString("user_uid", auth.currentUser?.uid.toString())
+                            editor.putString("user_mail", auth.currentUser?.email.toString())
                             editor.apply() // or editor.commit()
                             onSignUpClick()
                         } else {

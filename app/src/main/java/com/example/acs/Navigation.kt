@@ -16,16 +16,32 @@ sealed class Route{
 fun MyNavigation(navHostController: NavHostController){NavHost(
         navController = navHostController,
         startDestination =  "login_flow")
-    {navigation(startDestination = Route.LoginScreen().name , route = "login_flow") {
-            composable(route = Route.LoginScreen().name) {
-                LoginScreen(onSignUpClick = {
-                        navHostController.navigate(
-                            "signUp"
-                        ){launchSingleTop = true
-                        popUpTo(0)}
-                    }) }
-            composable("signUp"){SignUpScreen()
-            } } } }
+{
+    navigation(startDestination = Route.LoginScreen().name, route = "login_flow") {
+        composable(route = Route.LoginScreen().name) {
+            LoginScreen(onSignUpClick = {
+                navHostController.navigate(
+                    "signUp"
+                ) {
+                    launchSingleTop = true
+                    popUpTo(0)
+                }
+            })
+        }
+        composable("signUp") {
+            SignUpScreen(onLoginClick = {
+                navHostController.navigate(
+                    "login"
+                ) {
+                    launchSingleTop = true
+                    popUpTo(0)
+                }
+            })
+        }
+    };
+}
+}
+
 fun NavController.navigateToSingleTop(route:String){
     navigate(route){
         popUpTo(graph.findStartDestination().id){

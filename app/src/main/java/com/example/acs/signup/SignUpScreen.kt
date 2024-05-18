@@ -1,12 +1,18 @@
 package com.example.acs.signup
 
+import android.content.ContentValues
+import android.content.Context
+import android.os.Build
+import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -32,9 +38,14 @@ import com.example.acs.login.itemSpacing
 import com.example.acs.ui.theme.ACSTheme
 import com.example.acs.BiometricAuthenticator
 import com.example.acs.Route
+import com.google.firebase.Timestamp
+import com.google.firebase.firestore.FirebaseFirestore
+import java.time.Instant
 
+val defaultPadding = 16.dp
+val itemSpacing = 8.dp
 @Composable
-fun SignUpScreen()  {
+fun SignUpScreen(onLoginClick: () -> Unit)  {
 
     val (idDoor, onIdDoorChange) = rememberSaveable {
         mutableStateOf("")
@@ -44,12 +55,19 @@ fun SignUpScreen()  {
     val context = LocalContext.current.applicationContext
     val biometricAuthenticator = BiometricAuthenticator(context)
 
+    val sharedPreferences = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+    val userId = sharedPreferences.getString("user_uid", null)
+    val userMail = sharedPreferences.getString("user_mail", null)
+
+    val tag = "MyActivity"
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(defaultPadding),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
         HeaderText(
             text = "Доступ",
@@ -68,6 +86,7 @@ fun SignUpScreen()  {
         var message by remember {
             mutableStateOf("")
         }
+        Spacer(Modifier.height(itemSpacing))
         Button(modifier = Modifier.fillMaxWidth(), enabled = isFieldsNotEmpty,
                 onClick = {
 
@@ -80,6 +99,26 @@ fun SignUpScreen()  {
                             message = "Успех"
                             if (authenticate(idDoor)){
                                 Toast.makeText(context, "Успешно", Toast.LENGTH_SHORT).show()
+                                val db = FirebaseFirestore.getInstance()
+
+                                Log.d(tag, "Successful authentication using biometrics")
+                                val taskData = HashMap<String, Any>()
+                                val instant = Instant.now()
+                                val timestamp = instant.toEpochMilli()
+                                taskData["user"] = userMail.toString()
+                                taskData["date"] = Timestamp.now()
+                                taskData["room_id"] = idDoor.toString()
+
+                                val deviceModelName = Build.MODEL
+                                taskData["device_model"] = deviceModelName
+                                db.collection("access_history")
+                                    .add(taskData)
+                                    .addOnSuccessListener {
+                                        Log.d(tag, "Successfully added")
+                                    }
+                                    .addOnFailureListener {
+                                        Log.d(tag, "Encountered error while adding to db")
+                                    }
 
                             } else {
                                 Toast.makeText(context,"Ошибка ввода", Toast.LENGTH_SHORT).show()
@@ -97,6 +136,21 @@ fun SignUpScreen()  {
             Text("Подтвердить")
             
         }
+        Button(
+            modifier = Modifier
+                .align(Alignment.End)
+                .padding(),
+            enabled = true,
+            onClick = {
+                val editor = sharedPreferences.edit()
+                editor.putString("user_uid", null)
+                editor.putString("user_mail", null)
+                editor.apply()
+                onLoginClick()
+                      }, ) {
+            Text("Logout")
+
+    }
 
 
     }
