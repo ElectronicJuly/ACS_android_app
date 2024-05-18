@@ -5,6 +5,7 @@ import android.util.Log
 import android.widget.Toast
 import android.content.Context
 import android.os.Build
+import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -35,12 +36,31 @@ import com.example.acs.components.PasswordTextField
 import com.example.acs.ui.theme.ACSTheme
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import java.time.Instant
 
 val defaultPadding = 16.dp
 val itemSpacing = 8.dp
+
+fun SaveUserData(auth: String, context: Context): HashMap<String, Any> {
+    val taskData = HashMap<String, Any>()
+    val instant = Instant.now()
+    val timestamp = instant.toEpochMilli()
+    taskData["user"] = auth
+    taskData["date"] = Timestamp.now()
+
+    taskData["device_model"] = Build.MODEL
+    taskData["device_product"] = Build.PRODUCT
+    taskData["api_level"] = Build.VERSION.SDK_INT
+
+    taskData["devide_id"] = Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
+    taskData["android_version"] = System.getProperty("os.version")
+
+
+    return taskData
+}
 
 @Composable
 fun LoginScreen(onSignUpClick: () -> Unit){
@@ -123,16 +143,8 @@ fun LoginScreen(onSignUpClick: () -> Unit){
                                 "Аутентификация прошла успешно",
                                 Toast.LENGTH_SHORT,
                             ).show()
-                            val taskData = HashMap<String, Any>()
-                            val instant = Instant.now()
-                            val timestamp = instant.toEpochMilli()
-                            taskData["user"] = auth.currentUser?.email.toString()
-                            taskData["date"] = Timestamp.now()
-
-                            val deviceModelName = Build.MODEL
-                            taskData["device_model"] = deviceModelName
                             db.collection("login_history")
-                                .add(taskData)
+                                .add(SaveUserData(auth.currentUser?.email.toString(), context))
                                 .addOnSuccessListener {
                                     Log.d(tag, "Successfully added")
                                 }

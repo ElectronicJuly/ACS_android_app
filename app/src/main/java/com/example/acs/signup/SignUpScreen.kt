@@ -41,6 +41,7 @@ import com.example.acs.Route
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import java.time.Instant
+import com.example.acs.login.SaveUserData
 
 val defaultPadding = 16.dp
 val itemSpacing = 8.dp
@@ -86,7 +87,6 @@ fun SignUpScreen(onLoginClick: () -> Unit)  {
         var message by remember {
             mutableStateOf("")
         }
-        Spacer(Modifier.height(itemSpacing))
         Button(modifier = Modifier.fillMaxWidth(), enabled = isFieldsNotEmpty,
                 onClick = {
 
@@ -102,15 +102,7 @@ fun SignUpScreen(onLoginClick: () -> Unit)  {
                                 val db = FirebaseFirestore.getInstance()
 
                                 Log.d(tag, "Successful authentication using biometrics")
-                                val taskData = HashMap<String, Any>()
-                                val instant = Instant.now()
-                                val timestamp = instant.toEpochMilli()
-                                taskData["user"] = userMail.toString()
-                                taskData["date"] = Timestamp.now()
-                                taskData["room_id"] = idDoor.toString()
-
-                                val deviceModelName = Build.MODEL
-                                taskData["device_model"] = deviceModelName
+                                val taskData = SaveUserData(userMail.toString(), context)
                                 db.collection("access_history")
                                     .add(taskData)
                                     .addOnSuccessListener {
