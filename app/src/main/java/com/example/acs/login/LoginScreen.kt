@@ -3,6 +3,7 @@ package com.example.acs.login
 import android.content.ContentValues.TAG
 import android.util.Log
 import android.widget.Toast
+import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -32,13 +33,18 @@ import com.example.acs.components.LoginTextField
 import com.example.acs.components.PasswordTextField
 import com.example.acs.ui.theme.ACSTheme
 import com.google.firebase.Firebase
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.auth
+import com.google.firebase.firestore.FirebaseFirestore
+import java.time.Instant
 
 val defaultPadding = 16.dp
 val itemSpacing = 8.dp
 
 @Composable
 fun LoginScreen(onSignUpClick: () -> Unit){
+
+
 
     val (userName, setUsername) = rememberSaveable {
         mutableStateOf("")
@@ -54,8 +60,14 @@ fun LoginScreen(onSignUpClick: () -> Unit){
     val isFieldsEmpty = userName.isNotEmpty() && password.isNotEmpty()
     val context = LocalContext.current.applicationContext
 
+    val sharedPreferences = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+    val userId = sharedPreferences.getString("user_uid", null)
+    if (userId != null) {
+        onSignUpClick()
+    }
     val auth = Firebase.auth
     val currentUser = auth.currentUser
+    val tag = "MyActivity"
 
     Column (
         modifier = Modifier
@@ -99,16 +111,34 @@ fun LoginScreen(onSignUpClick: () -> Unit){
             modifier = Modifier.fillMaxWidth(),
             enabled = isFieldsEmpty,
             onClick = {
+
                 auth.signInWithEmailAndPassword(userName, password)
                     .addOnCompleteListener() { task ->
                         if (task.isSuccessful) {
+                            val db = FirebaseFirestore.getInstance()
                             Log.d(TAG, "signInWithEmail:success")
                             Toast.makeText(
                                 context,
                                 "Аутентификация прошла успешно",
                                 Toast.LENGTH_SHORT,
                             ).show()
-                            val user = auth.currentUser
+                            val taskData = HashMap<String, Any>()
+                            val instant = Instant.now()
+                            val timestamp = instant.toEpochMilli()
+                            taskData["user"] = auth.currentUser?.email.toString()
+                            taskData["date"] = Timestamp.now()
+                            db.collection("login_history")
+                                .add(taskData)
+                                .addOnSuccessListener {
+                                    Log.d(tag, "Successfully added")
+                                }
+                                .addOnFailureListener {
+                                    Log.d(tag, "Encountered error while adding to db")
+                                }
+                            val sharedPreferences = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+                            val editor = sharedPreferences.edit()
+                            editor.putString("user_uid", auth.currentUser?.uid.toString())
+                            editor.apply() // or editor.commit()
                             onSignUpClick()
                         } else {
                             Log.w(TAG, "signInWithEmail:failure", task.exception)
@@ -117,16 +147,14 @@ fun LoginScreen(onSignUpClick: () -> Unit){
                                 "Вход не осуществлен",
                                 Toast.LENGTH_SHORT,
                             ).show()}
-            }}
+                    }
+            }
 
         ) {
             Text("Вход")
         }
-
-
     }
-
-    }
+}
 
 
 @Preview (showSystemUi = true)
