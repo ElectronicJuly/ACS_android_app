@@ -197,6 +197,7 @@ fun SignUpScreen(onLoginClick: () -> Unit, onHistoryClick: () -> Unit)  {
 
                                     Log.d(tag, "Successful authentication using biometrics")
                                     val taskData = SaveUserData(userMail.toString(), context)
+                                    taskData["room_id"] = idDoor.toString()
                                     db.collection("access_history")
                                         .add(taskData)
                                         .addOnSuccessListener {

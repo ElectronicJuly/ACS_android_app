@@ -71,7 +71,6 @@ fun SaveUserData(auth: String, context: Context): HashMap<String, Any> {
     taskData["device_model"] = Build.MODEL
     taskData["device_product"] = Build.PRODUCT
     taskData["api_level"] = Build.VERSION.SDK_INT
-
     taskData["devide_id"] = Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
     taskData["android_version"] = System.getProperty("os.version")
 
@@ -105,7 +104,6 @@ fun LoginScreen(onSignUpClick: () -> Unit){
     val tag = "MyActivity"
 
     val sharedPreferences = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
-    val userId = sharedPreferences.getString("user_uid", null)
 
         ModalNavigationDrawer(
             drawerState = drawerState,

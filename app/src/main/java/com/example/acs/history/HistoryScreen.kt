@@ -1,6 +1,8 @@
 package com.example.acs.history
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -40,19 +42,36 @@ import com.example.acs.Route
 import com.example.acs.components.HeaderText
 import com.example.acs.login.defaultPadding
 import com.example.acs.ui.theme.ACSTheme
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
+import com.google.firebase.firestore.FirebaseFirestore
 
 val defaultPadding = 16.dp
 val itemSpacing = 8.dp
+@SuppressLint("StaticFieldLeak")
+val db = FirebaseFirestore.getInstance()
+val tag_db = "DatabaseActivity"
 
+fun getCollectionsAsMap(callback: (HashMap<String, Any?>) -> Unit) {
+    val hashMap = HashMap<String, Any?>()
+    db.collection("access_history")
+        .get()
+        .addOnSuccessListener { result ->
+            for (document in result) {
+//                Log.d(tag_db, "${document["date"]} => ${document["room_id"]}")
+                hashMap[document["date"].toString()] = document["room_id"].toString()
+            }
+            callback(hashMap)
+        }
+        .addOnFailureListener { exception ->
+            Log.d(tag_db, "Error getting documents: ", exception)
+        }
+}
+
+@SuppressLint("UnrememberedMutableState", "MutableCollectionMutableState")
 @Composable
 fun HistoryScreen(onAccessClick: () -> Unit) {
 
     val context = LocalContext.current.applicationContext
 
-    val auth = Firebase.auth
-    val currentUser = auth.currentUser
     val tag = "MyActivity"
 
     val sharedPreferences = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
@@ -102,15 +121,16 @@ fun HistoryScreen(onAccessClick: () -> Unit) {
                             text = "Панель доступа           ",
                             modifier = Modifier.align(Alignment.CenterVertically)
                         )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        ) {
+
+                        }
+
                     }
                 }
-                Column (
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                )
-                {
 
-                }
             }
         },
         content = {
@@ -137,28 +157,33 @@ fun HistoryScreen(onAccessClick: () -> Unit) {
                     modifier = Modifier
                         .padding(vertical = defaultPadding)
                 )
-                Row(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
                 ) {
-                    Column (
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .fillMaxWidth(0.5f)
-                    ) {
-                        Text(text = "s0")
+                    var accessHistory = mutableStateOf(HashMap<String, Any?>())
+
+                    getCollectionsAsMap { populatedHashMap ->
+                        accessHistory.value = populatedHashMap
+                        
                     }
-                    Column (
+
+                    Column(
                         modifier = Modifier
-                            .fillMaxHeight()
-                            .fillMaxWidth(0.5f)
+                            .fillMaxWidth()
                     ) {
-                        Text(text = "s1")
+                        if (accessHistory.value.isNotEmpty()) {
+                            // Check if accessHistory has data to avoid empty list
+                            for ((key, value) in accessHistory.value) {
+                                Text("Key: $key, Value: $value")
+                            }
+                        } else {
+                            // Optional: Show loading indicator while data is fetched
+                            Text("Loading access history...")
+                        }
                     }
                 }
-
-
-
+                
             }
             LaunchedEffect(openDrawer.value) {
                 if (openDrawer.value) {
