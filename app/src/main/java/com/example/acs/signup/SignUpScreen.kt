@@ -54,6 +54,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 val defaultPadding = 16.dp
 val itemSpacing = 8.dp
+
 @Composable
 fun SignUpScreen(onLoginClick: () -> Unit, onHistoryClick: () -> Unit)  {
 

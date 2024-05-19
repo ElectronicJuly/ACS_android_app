@@ -2,11 +2,14 @@ package com.example.acs.history
 
 import android.content.Context
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -14,6 +17,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
@@ -22,6 +26,7 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -32,15 +37,17 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.acs.Route
+import com.example.acs.components.HeaderText
 import com.example.acs.login.defaultPadding
-import com.example.acs.login.itemSpacing
 import com.example.acs.ui.theme.ACSTheme
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 
+val defaultPadding = 16.dp
+val itemSpacing = 8.dp
 
 @Composable
-fun HistoryScreen() {
+fun HistoryScreen(onAccessClick: () -> Unit) {
 
     val context = LocalContext.current.applicationContext
 
@@ -76,7 +83,26 @@ fun HistoryScreen() {
                     Text("Logged in as")
                     Text(text = userMail.toString())
                     Spacer(Modifier.height(itemSpacing +30.dp))
-
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.Start)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(color = Color.White.copy(alpha = 0.2f))
+                            .padding(1.dp)
+                            .clickable {
+                                onAccessClick()
+                            }
+                    ) {
+                        Icon(
+                            Icons.Default.Home,
+                            contentDescription = "Open Access Menu",
+                            modifier = Modifier
+                                .padding(8.dp))
+                        val text = Text(
+                            text = "Панель доступа           ",
+                            modifier = Modifier.align(Alignment.CenterVertically)
+                        )
+                    }
                 }
                 Column (
                     modifier = Modifier
@@ -106,15 +132,47 @@ fun HistoryScreen() {
                 ) {
                     Icon(Icons.Default.Menu, contentDescription = "Open Menu")
                 }
+                HeaderText(
+                    text = "История доступа",
+                    modifier = Modifier
+                        .padding(vertical = defaultPadding)
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                ) {
+                    Column (
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .fillMaxWidth(0.5f)
+                    ) {
+                        Text(text = "s0")
+                    }
+                    Column (
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .fillMaxWidth(0.5f)
+                    ) {
+                        Text(text = "s1")
+                    }
+                }
+
+
+
             }
-            Text(text = "This is where your history will be displayed.")
+            LaunchedEffect(openDrawer.value) {
+                if (openDrawer.value) {
+                    drawerState.open()
+                    openDrawer.value = false // Reset state after opening
+                }
+            }
         })
 
 }
 
 @Preview(showSystemUi = true)
 @Composable
-fun PrevSignUp(){
+fun PrevHistory(){
     ACSTheme {
         Route.HistoryScreen()
     }

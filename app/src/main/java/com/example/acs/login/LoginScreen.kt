@@ -106,10 +106,6 @@ fun LoginScreen(onSignUpClick: () -> Unit){
 
     val sharedPreferences = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
     val userId = sharedPreferences.getString("user_uid", null)
-    if (userId != null) {
-        onSignUpClick()
-    }
-
 
         ModalNavigationDrawer(
             drawerState = drawerState,
