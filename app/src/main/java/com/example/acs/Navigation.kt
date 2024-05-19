@@ -8,11 +8,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.example.acs.login.LoginScreen
 import com.example.acs.signup.SignUpScreen
+
 sealed class Route{
     data class LoginScreen(val name: String = "Login"): Route()
     data class SignUpScreen(val name: String = "Login"): Route()
 
-    data class HistoryScreen(val name: String = "history"): Route()
+    data class HistoryScreen(val name: String = "Login"): Route()
 }
 @Composable
 fun MyNavigation(navHostController: NavHostController){NavHost(
@@ -46,6 +47,9 @@ fun MyNavigation(navHostController: NavHostController){NavHost(
                     popUpTo(0)
                 }
             })
+
+        }
+        composable("history") {
 
         }
 
