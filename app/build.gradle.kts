@@ -13,7 +13,7 @@ android {
         minSdk = 27
         targetSdk = 34
         versionCode = 1
-        versionName = "1.0"
+        versionName = "0.01-beta"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -73,6 +73,7 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore:22.0.1’")
     //navigation
     implementation("androidx.navigation:navigation-compose:2.7.7")
+
     //implementation ("androidx.compose.material:material-icons-extended:navigation-compose:2.7.7")
     //biometric
     implementation("androidx.biometric:biometric-ktx:1.2.0-alpha05")
