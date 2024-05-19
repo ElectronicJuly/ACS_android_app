@@ -11,6 +11,8 @@ import com.example.acs.signup.SignUpScreen
 sealed class Route{
     data class LoginScreen(val name: String = "Login"): Route()
     data class SignUpScreen(val name: String = "Login"): Route()
+
+    data class HistoryScreen(val name: String = "history"): Route()
 }
 @Composable
 fun MyNavigation(navHostController: NavHostController){NavHost(
@@ -36,8 +38,17 @@ fun MyNavigation(navHostController: NavHostController){NavHost(
                     launchSingleTop = true
                     popUpTo(0)
                 }
+            }, onHistoryClick = {
+                navHostController.navigate(
+                    "history"
+                ) {
+                    launchSingleTop = true
+                    popUpTo(0)
+                }
             })
+
         }
+
     };
 }
 }

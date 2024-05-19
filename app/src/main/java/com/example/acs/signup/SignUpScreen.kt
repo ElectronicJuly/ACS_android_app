@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,8 +16,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
@@ -35,6 +38,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
@@ -51,7 +55,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 val defaultPadding = 16.dp
 val itemSpacing = 8.dp
 @Composable
-fun SignUpScreen(onLoginClick: () -> Unit)  {
+fun SignUpScreen(onLoginClick: () -> Unit, onHistoryClick: () -> Unit)  {
 
     val openDrawer = remember { mutableStateOf(false) }
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -77,11 +81,64 @@ fun SignUpScreen(onLoginClick: () -> Unit)  {
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
+                    .clip(RoundedCornerShape(topEnd = 16.dp))
                     .width(250.dp)
-                    .background(color = Color.Black.copy(alpha = 0.8f)) // Set background color
+                    .background(color = Color.Black.copy(alpha = 0.95f)) // Set background color
             ) {
-                // Your sidebar content goes here
-                Text("This is the sidebar content")
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(com.example.acs.login.defaultPadding),
+                    horizontalAlignment = Alignment.Start,
+                ) {
+                    Spacer(Modifier.height(com.example.acs.login.itemSpacing + 10.dp))
+                    Text("Logged in as")
+                    Text(text = userMail.toString())
+                    Spacer(Modifier.height(com.example.acs.login.itemSpacing +30.dp))
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.Start)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(color = Color.White.copy(alpha = 0.2f))
+                            .padding(1.dp)
+                            .clickable {
+                                onHistoryClick()
+                            }
+                    ) {
+                        Icon(
+                            Icons.Default.DateRange,
+                            contentDescription = "Open History",
+                            modifier = Modifier
+                                .padding(8.dp))
+                        val text = Text(
+                            text = "История посещения    ",
+                            modifier = Modifier.align(Alignment.CenterVertically)
+                        )
+                    }
+                }
+                Column (
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                )
+                {
+                    Row {
+                        Button(
+                            modifier = Modifier
+                                .padding()
+                                .align(Alignment.Bottom),
+                            enabled = true,
+                            onClick = {
+                                val editor = sharedPreferences.edit()
+                                editor.putString("user_uid", null)
+                                editor.putString("user_mail", null)
+                                editor.apply()
+                                onLoginClick() },
+                            ) { Text("Logout")
+                            Spacer(Modifier.height(com.example.acs.login.itemSpacing + 10.dp))
+                        }
+                    }
+                }
             }
         },
         content = @androidx.compose.runtime.Composable {
@@ -165,27 +222,6 @@ fun SignUpScreen(onLoginClick: () -> Unit)  {
                 ) {
                     Text("Подтвердить")
 
-                }
-                Spacer(Modifier.height(com.example.acs.login.itemSpacing))
-                Row {
-                    Spacer(
-                        modifier = Modifier
-                            .align(Alignment.Bottom)
-                    )
-                    Button(
-                        modifier = Modifier
-                            .padding(),
-                        enabled = true,
-                        onClick = {
-                            val editor = sharedPreferences.edit()
-                            editor.putString("user_uid", null)
-                            editor.putString("user_mail", null)
-                            editor.apply()
-                            onLoginClick()
-                        },
-                    ) {
-                        Text("Logout")
-                    }
                 }
             }
         })
